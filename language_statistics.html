@@ -1,0 +1,326 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}Статистика языков программирования - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'language_list' %}" class="text-decoration-none">Языки программирования</a></li>
+            <li class="breadcrumb-item active">Статистика</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold gradient-text">Статистика языков программирования</h1>
+            <p class="lead text-muted">Анализ использования языков программирования в проектах</p>
+        </div>
+    </div>
+
+    <!-- Популярные языки -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-trophy me-2 gradient-text"></i>
+                Самые популярные языки
+            </h5>
+            <span class="badge bg-primary">Топ 10</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Язык</th>
+                            <th>Кол-во проектов</th>
+                            <th>Средний % использования</th>
+                            <th>Общий % использования</th>
+                            <th>Последнее использование</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lang in popular_languages %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                        <i class="bi bi-code-slash gradient-text"></i>
+                                    </div>
+                                    <div>
+                                        <strong>
+                                            <a href="{% url 'language_detail' lang.language__id %}" class="text-decoration-none">
+                                                {{ lang.language__name }}
+                                            </a>
+                                        </strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary fs-6">
+                                    {{ lang.project_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         style="width: {{ lang.avg_percentage }}%;"
+                                         aria-valuenow="{{ lang.avg_percentage }}"
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ lang.avg_percentage|floatformat:1 }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="text-primary">{{ lang.total_percentage|floatformat:1 }}%</strong>
+                            </td>
+                            <td>
+                                {% if lang.latest_usage %}
+                                <small class="text-muted">{{ lang.latest_usage|date:"d.m.Y" }}</small>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="bi bi-graph-up display-4 text-muted"></i>
+                                <p class="mt-3">Нет данных о языках программирования</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Активные языки -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning me-2 gradient-text"></i>
+                        Активные языки (последние 90 дней)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if active_languages %}
+                    <div class="list-group list-group-flush">
+                        {% for lang in active_languages %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 bg-transparent py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="bi bi-arrow-up-right gradient-text"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ lang.language__name }}</h6>
+                                    <small class="text-muted">Используется в последних проектах</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-success bg-opacity-10 text-success">
+                                {{ lang.recent_project_count }} проектов
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clock display-4 text-muted"></i>
+                        <p class="mt-3">Нет данных об активных языках</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Тенденции по годам -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up-arrow me-2 gradient-text"></i>
+                        Тенденции использования
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for year, year_trends in trends.items %}
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-2">{{ year }} год</h6>
+                        {% if year_trends %}
+                        <div class="row">
+                            {% for trend in year_trends %}
+                            <div class="col-12 mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ trend.language__name }}</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary">
+                                        {{ trend.yearly_count }}
+                                    </span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         style="width: {{ trend.yearly_count }}%; max-width: 100%;">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">Нет данных за этот год</p>
+                        {% endif %}
+                    </div>
+                    {% if not forloop.last %}<hr>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика по категориям -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-grid-3x3-gap me-2 gradient-text"></i>
+                Использование языков по категориям проектов
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if category_stats %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Язык</th>
+                            <th>Категории проектов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lang_name, categories in category_stats.items %}
+                        <tr>
+                            <td style="width: 20%;">
+                                <strong>{{ lang_name }}</strong>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    {% for category_name, count in categories.items %}
+                                    <div class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        {{ category_name }}: {{ count }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-folder-x display-4 text-muted"></i>
+                <p class="mt-3">Нет данных по категориям</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="row mt-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 glow-border">
+                <div class="card-body py-4">
+                    <div class="display-4 fw-bold gradient-text mb-2">{{ language_stats.count }}</div>
+                    <h5 class="text-uppercase text-muted mb-0">Всего языков</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 glow-border">
+                <div class="card-body py-4">
+                    {% with total_projects=language_stats.aggregate(total=Sum('project_count')) %}
+                    <div class="display-4 fw-bold gradient-text mb-2">{{ total_projects.total|default:"0" }}</div>
+                    {% endwith %}
+                    <h5 class="text-uppercase text-muted mb-0">Всего проектов</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 glow-border">
+                <div class="card-body py-4">
+                    {% with avg_projects=language_stats.aggregate(avg=Avg('project_count')) %}
+                    <div class="display-4 fw-bold gradient-text mb-2">{{ avg_projects.avg|floatformat:1 }}</div>
+                    {% endwith %}
+                    <h5 class="text-uppercase text-muted mb-0">Среднее на язык</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center border-0 glow-border">
+                <div class="card-body py-4">
+                    {% with total_usage=language_stats.aggregate(total=Sum('total_percentage')) %}
+                    <div class="display-4 fw-bold gradient-text mb-2">{{ total_usage.total|floatformat:0 }}%</div>
+                    {% endwith %}
+                    <h5 class="text-uppercase text-muted mb-0">Общий % использования</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-link me-2 gradient-text"></i>
+                Быстрые ссылки
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'language_list' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-list-ul me-2"></i> Все языки
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'project_list' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-diagram-3 me-2"></i> Все проекты
+                    </a>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <a href="{% url 'statistics' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-bar-chart me-2"></i> Общая статистика
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        transition: width 0.6s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(138, 43, 226, 0.05);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,372 @@
+<!-- Создайте файл: reviews/templates/reviews/project_detail.html -->
+{% extends 'reviews/base.html' %}
+
+{% block title %}{{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Навигация -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Проекты</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ project.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Заголовок проекта -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ project.name }}</h1>
+            <p class="lead">{{ project.description }}</p>
+
+            <!-- Статус и категория -->
+            <div class="mb-3">
+                <span class="badge bg-primary fs-6">{{ project.get_status_display }}</span>
+                {% if project.category %}
+                    <span class="badge bg-secondary fs-6">{{ project.category.name }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Мета-информация -->
+            <div class="text-muted mb-3">
+                <small>
+                    <i class="bi bi-calendar"></i> Создан: {{ project.created_at|date:"d.m.Y" }}
+                    {% if project.updated_at %}
+                        | <i class="bi bi-clock-history"></i> Обновлен: {{ project.updated_at|date:"d.m.Y" }}
+                    {% endif %}
+                    {% if project.start_date %}
+                        | <i class="bi bi-play-circle"></i> Начало: {{ project.start_date|date:"d.m.Y" }}
+                    {% endif %}
+                    {% if project.end_date %}
+                        | <i class="bi bi-flag"></i> Завершение: {{ project.end_date|date:"d.m.Y" }}
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+
+        <div class="col-md-4 text-end">
+            <!-- Действия -->
+            {% if user.is_authenticated %}
+                <div class="btn-group mb-2">
+                    {% if user == project.author or user.is_staff %}
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                    {% endif %}
+                    <a href="#" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-star"></i> В избранное
+                    </a>
+                </div>
+            {% endif %}
+
+            <!-- Рейтинг -->
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Рейтинг проекта</h6>
+                    {% if avg_rating %}
+                        <div class="display-6">{{ avg_rating|floatformat:1 }}/5</div>
+                        <div class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating|add:"0" %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Пока нет оценок</p>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#ratingModal">
+                            {% if user_rating %}Изменить оценку{% else %}Оценить проект{% endif %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="row">
+        <!-- Левая колонка -->
+        <div class="col-md-8">
+            <!-- Детальное описание -->
+            {% if project.detailed_description %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Описание проекта</h5>
+                        <div class="project-description">
+                            {{ project.detailed_description|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Технологический стек -->
+            {% if tech_stack %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Технологический стек</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for tech in tech_stack %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center">
+                                        {% if tech.technology.icon %}
+                                            <i class="{{ tech.technology.icon }} fs-4 me-2"></i>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">
+                                                <a href="{% url 'technology_detail' tech.technology.slug %}">
+                                                    {{ tech.technology.name }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">{{ tech.technology.category }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Языки программирования -->
+            {% if languages %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Используемые языки</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for lang in languages %}
+                                <div class="col-md-4 mb-3">
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: {{ lang.percentage }}%"
+                                             aria-valuenow="{{ lang.percentage }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                            {{ lang.percentage }}%
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>{{ lang.language.name }}</span>
+                                        <span class="text-muted">{{ lang.percentage }}%</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Статьи о проекте -->
+            {% if articles %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Статьи о проекте</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            {% for article in articles %}
+                                <a href="{% url 'article_detail' article.slug %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ article.title }}</h6>
+                                        <small>{{ article.published_date|date:"d.m.Y" }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ article.excerpt|truncatechars:150 }}</p>
+                                    <small>
+                                        <i class="bi bi-eye"></i> {{ article.views }}
+                                        <i class="bi bi-chat ms-2"></i> {{ article.comments.count }}
+                                    </small>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="col-md-4">
+            <!-- Команды проекта -->
+            {% if teams %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Команды проекта</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for team in teams %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h6>
+                                    <a href="{% url 'team_detail' team.slug %}">{{ team.name }}</a>
+                                </h6>
+                                <p class="small mb-2">{{ team.description|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-info">{{ team.get_team_type_display }}</span>
+                                    <small class="text-muted">{{ team.members.count }} участников</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'create_team' %}" class="btn btn-outline-primary btn-sm w-100">
+                                <i class="bi bi-plus-circle"></i> Создать команду
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Ссылки и ресурсы -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Ссылки</h5>
+                </div>
+                <div class="card-body">
+                    {% if project.repository_url %}
+                        <a href="{{ project.repository_url }}" target="_blank" class="btn btn-outline-dark btn-sm w-100 mb-2">
+                            <i class="bi bi-github"></i> Репозиторий
+                        </a>
+                    {% endif %}
+
+                    {% if project.website_url %}
+                        <a href="{{ project.website_url }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <i class="bi bi-globe"></i> Веб-сайт
+                        </a>
+                    {% endif %}
+
+                    {% if project.documentation_url %}
+                        <a href="{{ project.documentation_url }}" target="_blank" class="btn btn-outline-info btn-sm w-100 mb-2">
+                            <i class="bi bi-book"></i> Документация
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Статистика -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-people text-primary me-2"></i>
+                            <strong>{{ teams.count }}</strong> команд
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-file-text text-success me-2"></i>
+                            <strong>{{ articles.count }}</strong> статей
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-star text-warning me-2"></i>
+                            <strong>{{ project.ratings.count }}</strong> оценок
+                        </li>
+                        {% if languages %}
+                            <li class="mb-2">
+                                <i class="bi bi-code-slash text-danger me-2"></i>
+                                <strong>{{ languages.count }}</strong> языков
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для оценки -->
+{% if user.is_authenticated %}
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'rate_object' %}">
+                {% csrf_token %}
+                <input type="hidden" name="object_type" value="project">
+                <input type="hidden" name="object_id" value="{{ project.id }}">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Оценить проект</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Оценка</label>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                <button type="button" class="star-btn" data-value="{{ forloop.counter }}">
+                                    <i class="bi bi-star{% if user_rating and forloop.counter <= user_rating.score %} fill{% endif %}"></i>
+                                </button>
+                            {% endfor %}
+                            <input type="hidden" name="score" id="ratingScore" value="{{ user_rating.score|default:3 }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review" class="form-label">Отзыв (необязательно)</label>
+                        <textarea class="form-control" id="review" name="review" rows="3">{{ user_rating.review|default:'' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить оценку</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.project-description img {
+    max-width: 100%;
+    height: auto;
+}
+
+.rating-stars {
+    font-size: 2rem;
+    color: #ffc107;
+}
+
+.rating-stars .star-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.rating-stars .bi-star-fill {
+    color: #ffc107;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка звезд рейтинга
+    const starButtons = document.querySelectorAll('.star-btn');
+    const ratingInput = document.getElementById('ratingScore');
+
+    starButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            ratingInput.value = value;
+
+            // Обновляем отображение звезд
+            starButtons.forEach((btn, index) => {
+                const icon = btn.querySelector('i');
+                if (index < value) {
+                    icon.className = 'bi bi-star-fill';
+                } else {
+                    icon.className = 'bi bi-star';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

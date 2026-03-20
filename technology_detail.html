@@ -1,0 +1,149 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}{{ technology.name }} - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'technology_list' %}">Технологии</a></li>
+            <li class="breadcrumb-item active">{{ technology.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Основная информация -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="display-6 fw-bold">{{ technology.name }}</h1>
+                        {% if technology.is_trending %}
+                        <span class="badge bg-warning text-dark fs-6">
+                            <i class="bi bi-fire"></i> Тренд
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <span class="badge bg-primary fs-6">{{ technology.category }}</span>
+                        <span class="badge bg-secondary fs-6 ms-2">
+                            <i class="bi bi-calendar"></i> {{ technology.release_date|date:"d.m.Y" }}
+                        </span>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Описание</h5>
+                        <p class="lead">{{ technology.description }}</p>
+                    </div>
+
+                    <!-- Ссылки -->
+                    {% if technology.website or technology.documentation or technology.github %}
+                    <div class="mb-4">
+                        <h5>Полезные ссылки</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if technology.website %}
+                            <a href="{{ technology.website }}" target="_blank" class="btn btn-outline-primary">
+                                <i class="bi bi-globe"></i> Официальный сайт
+                            </a>
+                            {% endif %}
+                            {% if technology.documentation %}
+                            <a href="{{ technology.documentation }}" target="_blank" class="btn btn-outline-secondary">
+                                <i class="bi bi-file-text"></i> Документация
+                            </a>
+                            {% endif %}
+                            {% if technology.github %}
+                            <a href="{{ technology.github }}" target="_blank" class="btn btn-outline-dark">
+                                <i class="bi bi-github"></i> GitHub
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Статьи об этой технологии -->
+                    {% if articles %}
+                    <div class="mt-5">
+                        <h5 class="mb-4">Статьи о {{ technology.name }}</h5>
+                        <div class="list-group">
+                            {% for article in articles %}
+                            <a href="{% url 'article_detail' article.slug %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ article.title }}</h6>
+                                    <small>{{ article.published_date|date:"d.m.Y" }}</small>
+                                </div>
+                                <p class="mb-1 text-muted">{{ article.excerpt|truncatewords:15 }}</p>
+                                <small>Автор: {{ article.author.username }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Информация о технологии -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Информация</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Категория:</span>
+                            <strong>{{ technology.category }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Дата выпуска:</span>
+                            <strong>{{ technology.release_date|date:"d.m.Y" }}</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Текущая версия:</span>
+                            <strong>{{ technology.current_version|default:"Не указана" }}</strong>
+                        </li>
+                        {% if technology.programming_language %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>Язык программирования:</span>
+                            <strong>{{ technology.programming_language.name }}</strong>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'create_article' %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Написать статью
+                        </a>
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-star"></i> Добавить в избранное
+                        </button>
+                        {% if user.is_staff %}
+                        <a href="/admin/reviews/technology/{{ technology.id }}/change/" class="btn btn-outline-warning" target="_blank">
+                            <i class="bi bi-pencil-square"></i> Редактировать
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти для действий
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

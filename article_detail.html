@@ -1,0 +1,315 @@
+[file name]: article_detail.html
+[file content begin]
+{% extends 'reviews/base.html' %}
+
+{% block title %}{{ article.title }} - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'article_list' %}" class="text-decoration-none">Статьи</a></li>
+            <li class="breadcrumb-item active">{{ article.title|truncatewords:5 }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Основной контент -->
+        <div class="col-lg-8">
+            <div class="card border-0 mb-4">
+                <!-- Заголовок -->
+                <div class="card-header bg-transparent border-0 pt-0">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-3">
+                                {{ article.get_article_type_display }}
+                            </span>
+                            <h1 class="display-6 fw-bold mb-3">{{ article.title }}</h1>
+                        </div>
+                        {% if user == article.author or user.is_staff %}
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm show" type="button" data-bs-toggle="dropdown" aria-expanded="true">
+                                <i class="bi bi-gear"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="{% url 'article_update' article.slug %}"><i class="bi bi-pencil me-2"></i>Редактировать</a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="shareArticle()"><i class="bi bi-share me-2"></i>Поделиться</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Мета информация -->
+                    <div class="d-flex flex-wrap gap-4 mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                <i class="bi bi-person gradient-text"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Автор</small>
+                                <div class="fw-medium">{{ article.author.username }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                <i class="bi bi-calendar3 gradient-text"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Опубликовано</small>
+                                <div class="fw-medium">{{ article.published_date|date:"d.m.Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                <i class="bi bi-eye gradient-text"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Просмотры</small>
+                                <div class="fw-medium">{{ article.views }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Изображение -->
+                {% if article.featured_image %}
+                <div class="card-img-top mb-4">
+                    <img src="{{ article.featured_image.url }}" alt="{{ article.title }}"
+                         class="img-fluid rounded-3 glow-border" style="max-height: 400px; width: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+
+                <!-- Контент статьи -->
+                <div class="card-body">
+                    <div class="article-content mb-5">
+                        {{ article.content|linebreaks }}
+                    </div>
+
+                    <!-- Теги -->
+                    {% if article.tags %}
+                    <div class="mb-5">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-tags me-2 gradient-text"></i>
+                            Теги
+                        </h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tag in article.get_tags_list %}
+                            <span class="badge bg-dark border border-primary bg-opacity-25">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Комментарии -->
+            <div class="card border-0">
+                <div class="card-header bg-transparent border-0">
+                    <h3 class="fw-bold">
+                        <i class="bi bi-chat-left-text me-2 gradient-text"></i>
+                        Комментарии ({{ comments.count }})
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' article.slug %}" class="mb-5">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Добавить комментарий</label>
+                            {{ comment_form.content }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-2"></i> Отправить
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-dark border border-primary bg-opacity-10 mb-5">
+                        <i class="bi bi-info-circle me-2 gradient-text"></i>
+                        <a href="{% url 'login' %}" class="text-decoration-none fw-bold">Войдите</a>, чтобы оставить комментарий.
+                    </div>
+                    {% endif %}
+
+                    <!-- Список комментариев -->
+                    {% for comment in comments %}
+                    <div class="card border border-dark bg-transparent mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                        <i class="bi bi-person-circle gradient-text"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ comment.author.username }}</div>
+                                        <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                    </div>
+                                </div>
+                                {% if user == comment.author or user.is_staff %}
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li><a class="dropdown-item" href="#">Ответить</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#">Удалить</a></li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <p class="mb-0">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-left display-1 gradient-text mb-3"></i>
+                        <p class="text-muted">Пока нет комментариев. Будьте первым!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Боковая панель -->
+        <div class="col-lg-4">
+            <!-- Информация -->
+            <div class="card border-0 mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-info-circle me-2 gradient-text"></i>
+                        Информация
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-transparent border-dark d-flex justify-content-between">
+                            <span class="text-muted">Статус:</span>
+                            <span class="fw-medium">{{ article.get_status_display }}</span>
+                        </li>
+                        <li class="list-group-item bg-transparent border-dark d-flex justify-content-between">
+                            <span class="text-muted">Тип:</span>
+                            <span class="fw-medium">{{ article.get_article_type_display }}</span>
+                        </li>
+                        {% if article.technology %}
+                        <li class="list-group-item bg-transparent border-dark">
+                            <div class="text-muted mb-1">Технология:</div>
+                            <a href="{% url 'technology_detail' article.technology.slug %}"
+                               class="d-flex align-items-center text-decoration-none">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="bi bi-cpu gradient-text"></i>
+                                </div>
+                                <span class="fw-medium">{{ article.technology.name }}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if article.project %}
+                        <li class="list-group-item bg-transparent border-dark">
+                            <div class="text-muted mb-1">Проект:</div>
+                            <a href="{% url 'project_detail' article.project.slug %}"
+                               class="d-flex align-items-center text-decoration-none">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                    <i class="bi bi-diagram-3 gradient-text"></i>
+                                </div>
+                                <span class="fw-medium">{{ article.project.name }}</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Похожие статьи -->
+            {% if similar_articles %}
+            <div class="card border-0">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-file-text me-2 gradient-text"></i>
+                        Похожие статьи
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for similar in similar_articles %}
+                        <a href="{% url 'article_detail' similar.slug %}"
+                           class="list-group-item list-group-item-action border-dark bg-transparent py-3">
+                            <div class="d-flex align-items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                        <i class="bi bi-file-text gradient-text"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ similar.title|truncatewords:6 }}</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-eye me-1"></i> {{ similar.views }}
+                                    </small>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+
+    .article-content h2 {
+        color: var(--accent-cyan);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .article-content h3 {
+        color: var(--primary-purple-light);
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .article-content p {
+        margin-bottom: 1.5rem;
+    }
+
+    .article-content ul, .article-content ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .article-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .article-content code {
+        background: rgba(138, 43, 226, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--accent-cyan);
+    }
+
+    .article-content pre {
+        background: var(--dark-card);
+        border: 1px solid var(--dark-border);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+    }
+
+    .article-content blockquote {
+        border-left: 4px solid var(--primary-purple);
+        padding-left: 1rem;
+        margin-left: 0;
+        font-style: italic;
+        color: var(--dark-text-secondary);
+    }
+</style>
+{% endblock %}
+[file content end]

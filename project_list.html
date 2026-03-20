@@ -1,0 +1,100 @@
+<!-- reviews/templates/reviews/project_list.html -->
+{% extends 'reviews/base.html' %}
+
+{% block title %}Проекты{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Проекты</h1>
+
+
+
+            <!-- Список проектов -->
+            {% if page_obj %}
+                <div class="row">
+                    {% for project in page_obj %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                {% if project.image %}
+                                    <img src="{{ project.image.url }}" class="card-img-top" alt="{{ project.name }}"
+                                         style="height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ project.name }}</h5>
+                                    <p class="card-text">{{ project.description|truncatechars:100 }}</p>
+
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary">{{ project.get_status_display }}</span>
+                                        {% if project.category %}
+                                            <span class="badge bg-secondary">{{ project.category.name }}</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <p class="text-muted small mb-0">
+                                        <i class="bi bi-calendar"></i>
+                                        {{ project.created_at|date:"d.m.Y" }}
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{% url 'project_detail' project.slug %}" class="btn btn-sm btn-outline-primary">
+                                        Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% if page_obj.has_other_pages %}
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                                        Назад
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                                            {{ num }}
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">
+                                        Вперед
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    <h4 class="alert-heading">Проектов пока нет</h4>
+                    <p>Будьте первым, кто создаст проект!</p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'create_project' %}" class="btn btn-primary">Создать проект</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">Войдите, чтобы создать проект</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

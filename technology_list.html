@@ -1,0 +1,284 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}Технологии - TechReview{% endblock %}
+
+{% block content %}
+<div class="animate-fade-in">
+    <!-- Hero секция -->
+    <section class="hero-section rounded-4 mb-5">
+        <div class="container position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Технологии программирования</h1>
+                    <p class="lead mb-4 opacity-90">Исследуйте мир современных языков, фреймворков и инструментов. Находите идеальные технологии для ваших проектов.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="#trending" class="btn btn-light">
+                            <i class="bi bi-fire me-2"></i>Тренды
+                        </a>
+                        <a href="#all-tech" class="btn btn-outline-light">
+                            <i class="bi bi-list-ul me-2"></i>Все технологии
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <i class="bi bi-cpu-fill display-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+
+
+        <!-- Трендовые технологии -->
+        {% if trending_technologies %}
+        <section id="trending" class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="bi bi-fire text-warning me-2"></i>Трендовые технологии
+                </h2>
+                <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                    {{ trending_technologies|length }} в тренде
+                </span>
+            </div>
+
+            <div class="row g-4">
+                {% for tech in trending_technologies %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <div class="card tech-card h-100 border-0 shadow-hover">
+                        <div class="card-body position-relative">
+                            <div class="position-absolute top-0 end-0 mt-3 me-3">
+                                <span class="badge bg-warning text-dark animate-pulse">
+                                    <i class="bi bi-lightning-charge"></i> Тренд
+                                </span>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="bg-primary bg-opacity-10 rounded-3 p-3 mb-3 d-inline-flex">
+                                    <i class="bi bi-cpu-fill fs-3 text-primary"></i>
+                                </div>
+                                <h5 class="card-title fw-bold mb-2">{{ tech.name }}</h5>
+                                <p class="text-muted small mb-3">{{ tech.description|truncatewords:15 }}</p>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-primary">{{ tech.category }}</span>
+                                {% if tech.programming_language %}
+                                <span class="badge bg-secondary">{{ tech.programming_language.name }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>{{ tech.release_date|date:"Y" }}
+                                </small>
+                                <a href="{% url 'technology_detail' tech.slug %}"
+                                   class="btn btn-sm btn-outline-primary rounded-pill">
+                                    Подробнее <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Все технологии -->
+        <section id="all-tech" class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">
+                    <i class="bi bi-grid-3x3-gap text-primary me-2"></i>Все технологии
+                </h2>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active" data-filter="all">Все</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="trending">Тренды</button>
+                    <button type="button" class="btn btn-outline-primary" data-filter="recent">Новые</button>
+                </div>
+            </div>
+
+            {% if page_obj %}
+            <div class="row g-4" id="techGrid">
+                {% for tech in page_obj %}
+                <div class="col-xl-4 col-lg-6" data-tech-category="{{ tech.category|lower }}"
+                     data-tech-language="{{ tech.programming_language.id|default:'' }}"
+                     data-tech-trending="{{ tech.is_trending|yesno:'trending,' }}">
+                    <div class="card h-100 border-0 shadow-sm hover-shadow">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary bg-opacity-10 rounded-3 p-2">
+                                        <i class="bi bi-gear-fill fs-4 text-primary"></i>
+                            </button>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title mb-1">{{ tech.name }}</h5>
+                                        {% if tech.is_trending %}
+                                        <span class="badge bg-warning text-dark small">
+                                            <i class="bi bi-fire"></i>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="badge bg-primary bg-opacity-25 text-primary small">
+                                        {{ tech.category }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p class="card-text text-muted mb-4">{{ tech.description|truncatewords:25 }}</p>
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <div>
+                                    {% if tech.programming_language %}
+                                    <small class="text-muted">
+                                        <i class="bi bi-code-slash me-1"></i>{{ tech.programming_language.name }}
+                                    </small>
+                                    {% endif %}
+                                    <small class="text-muted ms-3">
+                                        <i class="bi bi-calendar me-1"></i>{{ tech.release_date|date:"d.m.Y" }}
+                                    </small>
+                                </div>
+                                <a href="{% url 'technology_detail' tech.slug %}"
+                                   class="btn btn-sm btn-primary rounded-circle p-2">
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card border-0 bg-light">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-cpu display-1 text-muted mb-3"></i>
+                    <h4 class="mb-3">Технологий пока нет</h4>
+                    <p class="text-muted mb-4">Будьте первым, кто добавит технологию!</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'admin:reviews_technology_add' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Добавить технологию
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти для добавления
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Пагинация -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </section>
+
+        <!-- Статистика -->
+        <section class="mb-5">
+            <h3 class="fw-bold mb-4">Статистика технологий</h3>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="card border-0 bg-gradient-primary text-white">
+                        <div class="card-body text-center p-4">
+                            <h2 class="display-4 fw-bold">{{ total_technologies }}</h2>
+                            <p class="mb-0 opacity-90">Всего технологий</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-gradient-accent text-white">
+                        <div class="card-body text-center p-4">
+                            <h2 class="display-4 fw-bold">{{ trending_count|default:0 }}</h2>
+                            <p class="mb-0 opacity-90">В тренде</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-dark text-white">
+                        <div class="card-body text-center p-4">
+                            <h2 class="display-4 fw-bold">{{ current_year }}</h2>
+                            <p class="mb-0 opacity-90">Новых в {{ current_year }} году</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 bg-info text-white">
+                        <div class="card-body text-center p-4">
+                            <h2 class="display-4 fw-bold">{{ categories|length }}</h2>
+                            <p class="mb-0 opacity-90">Категорий</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .hover-shadow {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hover-shadow:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2) !important;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    }
+
+    .bg-gradient-accent {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    }
+
+    .animate-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
+    .shadow-hover {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+</style>
+
+
+{% endblock %}

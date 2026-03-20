@@ -1,0 +1,75 @@
+{% extends "reviews/base.html" %}
+
+{% load i18n static %}
+
+{% block title %}Панель управления | {{ site_title|default:'TechReview Admin' }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Главная</a>
+    &rsaquo; Панель управления
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Добро пожаловать в панель управления TechReview</h2>
+            <p>Используйте боковое меню для навигации по различным разделам администрирования.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Пользователи</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управляйте пользователями, их ролями и профилями.</p>
+                    <a href="{% url 'admin:auth_user_changelist' %}" class="btn btn-primary">Управление пользователями</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-code-slash me-2"></i>Контент</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управляйте статьями, комментариями, технологиями и проектами.</p>
+                    <a href="{% url 'admin:reviews_article_changelist' %}" class="btn btn-success">Управление контентом</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Команды</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управляйте командами разработки и их участниками.</p>
+                    <a href="{% url 'admin:reviews_developmentteam_changelist' %}" class="btn btn-info">Управление командами</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Настройки</h5>
+                </div>
+                <div class="card-body">
+                    <p>Управляйте настройками приложения, тегами и категориями.</p>
+                    <a href="{% url 'admin:reviews_tag_changelist' %}" class="btn btn-warning">Настройки системы</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

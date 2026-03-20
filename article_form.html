@@ -1,0 +1,186 @@
+[file name]: article_form.html
+[file content begin]
+{% extends 'reviews/base.html' %}
+
+{% block title %}{{ title }} - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card glow-border">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="bi bi-pencil-square me-2 gradient-text"></i>
+                        {{ title }}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            <!-- Основные поля -->
+                            <div class="col-md-8">
+                                <!-- Заголовок -->
+                                <div class="mb-4">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                        <i class="bi bi-type me-1"></i> Заголовок *
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="text-danger small">{{ form.title.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Краткое описание -->
+                                <div class="mb-4">
+                                    <label for="{{ form.excerpt.id_for_label }}" class="form-label fw-bold">
+                                        <i class="bi bi-text-paragraph me-1"></i> Краткое описание *
+                                    </label>
+                                    {{ form.excerpt }}
+                                    {% if form.excerpt.errors %}
+                                        <div class="text-danger small">{{ form.excerpt.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Содержание -->
+                                <div class="mb-4">
+                                    <label for="{{ form.content.id_for_label }}" class="form-label fw-bold">
+                                        <i class="bi bi-file-text me-1"></i> Содержание *
+                                    </label>
+                                    {{ form.content }}
+                                    {% if form.content.errors %}
+                                        <div class="text-danger small">{{ form.content.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Теги -->
+                                <div class="mb-4">
+                                    <label for="{{ form.tags.id_for_label }}" class="form-label fw-bold">
+                                        <i class="bi bi-tags me-1"></i> Теги
+                                    </label>
+                                    {{ form.tags }}
+                                    <div class="form-text text-muted">
+                                        Вводите теги через запятую (например: Django, Python, Веб-разработка)
+                                    </div>
+                                    {% if form.tags.errors %}
+                                        <div class="text-danger small">{{ form.tags.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Боковая панель -->
+                            <div class="col-md-4">
+                                <!-- Настройки -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Настройки</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Тип статьи -->
+                                        <div class="mb-3">
+                                            <label for="{{ form.article_type.id_for_label }}" class="form-label">
+                                                Тип статьи
+                                            </label>
+                                            {{ form.article_type }}
+                                        </div>
+
+                                        <!-- Технология -->
+                                        <div class="mb-3">
+                                            <label for="{{ form.technology.id_for_label }}" class="form-label">
+                                                Технология
+                                            </label>
+                                            {{ form.technology }}
+                                        </div>
+
+                                        <!-- Проект -->
+                                        <div class="mb-3">
+                                            <label for="{{ form.project.id_for_label }}" class="form-label">
+                                                Проект
+                                            </label>
+                                            {{ form.project }}
+                                        </div>
+
+                                        <!-- Статус -->
+                                        <div class="mb-3">
+                                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                                Статус
+                                            </label>
+                                            {{ form.status }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Изображение -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Изображение</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            {{ form.featured_image }}
+                                            {% if form.featured_image.errors %}
+                                                <div class="text-danger small">{{ form.featured_image.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-2"></i> Сохранить статью
+                                </button>
+                                <a href="{% url 'article_list' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i> Отмена
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    #id_content {
+        min-height: 400px;
+    }
+
+    #id_excerpt {
+        min-height: 100px;
+    }
+
+    input[type="file"].form-control {
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        color: var(--dark-text);
+        border-radius: 12px;
+    }
+
+    input[type="file"].form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary-purple);
+        box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+    }
+</style>
+{% endblock %}

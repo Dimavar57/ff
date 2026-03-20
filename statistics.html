@@ -1,0 +1,241 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}Статистика - TechReview{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold gradient-text">Статистика сайта</h1>
+            <p class="lead">Аналитика и метрики TechReview</p>
+        </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-1 text-primary">{{ stats.total_articles }}</h1>
+                    <h5 class="card-title">Статей</h5>
+                    <p class="text-muted small">Опубликовано: {{ stats.total_articles }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-1 text-success">{{ stats.total_technologies }}</h1>
+                    <h5 class="card-title">Технологий</h5>
+                    <p class="text-muted small">В тренде: {{ stats.total_technologies }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-1 text-info">{{ stats.total_projects }}</h1>
+                    <h5 class="card-title">Проектов</h5>
+                    <p class="text-muted small">Выпущено: {{ stats.total_projects }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-1 text-warning">{{ stats.total_users }}</h1>
+                    <h5 class="card-title">Пользователей</h5>
+                    <p class="text-muted small">Всего: {{ stats.total_users }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные статьи -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-trophy"></i> Самые популярные статьи</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Статья</th>
+                            <th>Просмотры</th>
+                            <th>Автор</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for article in popular_articles %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'article_detail' article.slug %}" class="text-decoration-none">
+                                    {{ article.title|truncatewords:8 }}
+                                </a>
+                            </td>
+                            <td>{{ article.views }}</td>
+                            <td>{{ article.author.username }}</td>
+                            <td>{{ article.published_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Нет статей</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Топ технологий -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-star"></i> Лучшие технологии по рейтингу</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Технология</th>
+                            <th>Рейтинг</th>
+                            <th>Отзывов</th>
+                            <th>Категория</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in top_technologies %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'technology_detail' item.technology.slug %}" class="text-decoration-none">
+                                    {{ item.technology.name }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="rating-stars">
+                                    {% with stars=item.rating|floatformat:0 %}
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= stars|add:"0" %}
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                        <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                    <small class="text-muted ms-2">({{ item.rating|floatformat:1 }})</small>
+                                </div>
+                            </td>
+                            <td>{{ item.review_count }}</td>
+                            <td>{{ item.technology.category }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Нет данных о технологиях</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Активные пользователи -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-people"></i> Самые активные пользователи</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Статей</th>
+                            <th>Комментариев</th>
+                            <th>Дата регистрации</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in active_users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.article_count }}</td>
+                            <td>{{ user.comment_count }}</td>
+                            <td>{{ user.date_joined|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">Нет данных о пользователях</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Дополнительная статистика -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-3">{{ stats.total_comments|default:"0" }}</h1>
+                    <h5>Комментариев</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-3">{{ stats.total_ratings|default:"0" }}</h1>
+                    <h5>Оценок</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-3">{{ stats.total_teams|default:"0" }}</h1>
+                    <h5>Команд разработчиков</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Быстрые ссылки -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-link"></i> Дополнительная статистика</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'language_statistics' %}" class="btn btn-primary w-100">
+                        <i class="bi bi-code-slash me-2"></i> Статистика языков программирования
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a href="{% url 'changelog' %}" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-clock-history me-2"></i> История изменений
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .rating-stars {
+        color: gold;
+    }
+    .card {
+        transition: transform 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

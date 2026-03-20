@@ -1,0 +1,438 @@
+[file name]: base.html
+[file content begin]
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TechReview - Обзоры технологий{% endblock %}</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+ :root {
+    --primary-purple: #8a2be2;
+    --primary-purple-dark: #6a1bb0;
+    --primary-purple-light: #9d4edd;
+    --light-bg: #f0f0f5;
+    --light-card: #ffffff;
+    --light-border: #dcdcdc;
+    --light-text: #222;
+    --light-text-secondary: #555;
+    --accent-cyan: #00d4ff;
+    --accent-pink: #ff00ff;
+    --gradient-purple: linear-gradient(135deg, #8a2be2 0%, #4a00e0 100%);
+    --gradient-dark: linear-gradient(135deg, #f0f0f5 0%, #e0e0e5 100%);
+}
+
+/* Тело страницы */
+body {
+    background: var(--light-bg);
+    color: var(--light-text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding-top: 70px;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(74, 0, 224, 0.05) 0%, transparent 20%);
+}
+
+/* Навигационная панель */
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--light-border);
+    box-shadow: 0 4px 30px rgba(138, 43, 226, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    background: var(--gradient-purple);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+.nav-link {
+    color: var(--light-text) !important;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-link:hover {
+    color: var(--accent-cyan) !important;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--gradient-purple);
+    transition: width 0.3s ease;
+}
+
+/* Подвал сайта */
+.footer {
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid var(--light-border);
+    backdrop-filter: blur(10px);
+    margin-top: auto;
+}
+
+/* Карточки */
+.card {
+    background: var(--light-card);
+    border: 1px solid var(--light-border);
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+    border-color: var(--primary-purple);
+}
+
+.card-header {
+    background: rgba(138, 43, 226, 0.1);
+    border-bottom: 1px solid var(--light-border);
+    font-weight: 600;
+}
+
+/* Кнопки */
+.btn-primary {
+    background: var(--gradient-purple);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 10px 24px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-purple);
+    color: var(--primary-purple);
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover {
+    background: var(--gradient-purple);
+    border-color: transparent;
+    transform: translateY(-2px);
+}
+
+/* Формы */
+.form-control {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--light-border);
+    color: var(--light-text);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
+    color: var(--light-text);
+}
+
+/* Метки */
+.badge {
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 500;
+}
+
+/* Герой секция */
+.hero-section {
+    background: var(--gradient-dark);
+    border-radius: 24px;
+    padding: 60px 0;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 40px;
+    border: 1px solid var(--light-border);
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(74, 0, 224, 0.15) 0%, transparent 50%);
+}
+
+/* Алерты */
+.alert {
+    border-radius: 12px;
+    border: none;
+    backdrop-filter: blur(10px);
+}
+
+/* Постраничная навигация */
+.pagination .page-link {
+    background: var(--light-card);
+    border: 1px solid var(--light-border);
+    color: var(--light-text);
+}
+
+.pagination .page-link:hover {
+    background: var(--primary-purple);
+    border-color: var(--primary-purple);
+}
+
+.pagination .active .page-link {
+    background: var(--gradient-purple);
+    border-color: var(--primary-purple);
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-purple);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-purple-dark);
+}
+
+/* Анимации */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.floating {
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Эффекты свечения */
+.glow-text {
+    text-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+}
+
+.glow-border {
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+}
+
+/* Градиентный текст */
+.gradient-text {
+    background: var(--gradient-purple);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Карточки статей */
+.article-card {
+    position: relative;
+}
+
+.article-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-purple);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.article-card:hover::before {
+    opacity: 1;
+}
+
+/* Таблицы */
+.table {
+    color: var(--light-text);
+}
+
+.table-hover tbody tr:hover {
+    background: rgba(138, 43, 226, 0.1);
+}
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <i class="bi bi-cpu-fill me-2"></i>
+                <span>TechReview</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">
+                            <i class="bi bi-house-door"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'article_list' %}">
+                            <i class="bi bi-newspaper"></i> Статьи
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'technology_list' %}">
+                            <i class="bi bi-cpu"></i> Технологии
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">
+                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus"></i> Регистрация
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Сообщения -->
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                   {% if message.tags == 'success' %}
+    <i class="bi bi-check-circle me-2"></i>
+{% elif message.tags == 'error' %}
+    <i class="bi bi-exclamation-circle me-2"></i>
+{% elif message.tags == 'info' %}
+    <i class="bi bi-info-circle me-2"></i>
+{% endif %}
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Основной контент -->
+    <main class="container py-4 flex-grow-1">
+        {% block content %}
+        <!-- Сюда будет вставляться содержимое других шаблонов -->
+        {% endblock %}
+    </main>
+
+    <!-- Подвал -->
+    <footer class="footer mt-5">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-cpu-fill fs-2 me-3 gradient-text"></i>
+                        <div>
+                            <h5 class="mb-1">TechReview</h5>
+                            <p class="mb-0 text-muted">Обзоры новых технологий в программировании</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0 text-muted">
+                        © {% now "Y" %} TechReview. Все права защищены.
+                        <br>
+                        <small>Разработано с <i class="bi bi-heart-fill text-danger"></i> для разработчиков</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script>
+        // Плавная прокрутка
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Анимация при скролле
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .featured-item').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+[file content end]

@@ -1,0 +1,197 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}Поиск - TechReview{% endblock %}
+
+{% block content %}
+<div class="container py-4" xmlns:tech.id xmlns:tech.id>
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold">Расширенный поиск</h1>
+            <p class="lead">Найдите статьи, технологии, проекты и программы</p>
+        </div>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" name="q" class="form-control form-control-lg"
+                           placeholder="Введите запрос..." value="{{ form.q.value|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-search"></i> Найти
+                    </button>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Категория статьи</label>
+                    <select name="article_type" class="form-control">
+                        <option value="">Все типы</option>
+                        {% for type_code, type_name in article_types %}
+                        <option value="{{ type_code }}" {% if form.article_type.value == type_code %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Категория проекта</label>
+                    <select name="category" class="form-control">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if form.category.value == category.id|stringformat:"i" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Технология</label>
+                    <select name="technology" class="form-control">
+                        <option value="">Все технологии</option>
+                        {% for tech in technologies %}
+                        <option value="{{ tech.id }}" {% if form.technology.value == tech.id|stringformat:"i" %}selected{% endif %}>
+                            {{ tech.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Результаты поиска -->
+    {% if form.q.value %}
+    <div class="row">
+        <!-- Статьи -->
+        {% if results.articles %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-newspaper"></i> Статьи ({{ results.articles|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for article in results.articles %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h6>
+                            <a href="{% url 'article_detail' article.slug %}" class="text-decoration-none">
+                                {{ article.title }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-2">{{ article.excerpt|truncatewords:20 }}</p>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> {{ article.published_date|date:"d.m.Y" }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="bi bi-eye"></i> {{ article.views }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Технологии -->
+        {% if results.technologies %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-cpu"></i> Технологии ({{ results.technologies|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for tech in results.technologies %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h6>
+                            <a href="{% url 'technology_detail' tech.slug %}" class="text-decoration-none">
+                                {{ tech.name }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-2">{{ tech.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">{{ tech.category }}</small>
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> {{ tech.release_date|date:"Y" }}
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Проекты -->
+        {% if results.projects %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Проекты ({{ results.projects|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for project in results.projects %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h6>
+                            <a href="{% url 'project_detail' project.slug %}" class="text-decoration-none">
+                                {{ project.name }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-2">{{ project.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">{{ project.get_status_display }}</small>
+                            {% if project.is_open_source %}
+                            <small class="text-success">
+                                <i class="bi bi-github"></i> Open Source
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Программы -->
+        {% if results.programs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-code-square"></i> Программы ({{ results.programs|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% for program in results.programs %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h6>
+                            <a href="{% url 'program_detail' program.slug %}" class="text-decoration-none">
+                                {{ program.name }}
+                            </a>
+                        </h6>
+                        <p class="text-muted small mb-2">{{ program.description|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">Автор: {{ program.author.username }}</small>
+                            {% if program.license %}
+                            <small class="text-muted">Лицензия: {{ program.license }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% elif request.GET %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Используйте форму выше для поиска.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "reviews/base.html" %}
+
+{% load i18n static %}
+
+{% block title %}Вход в панель управления | {{ site_title|default:'TechReview Admin' }}{% endblock %}
+
+{% block bodyclass %}login{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shield-lock-fill me-2"></i>
+                        Вход в панель управления
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Имя пользователя и пароль не совпадают. Пожалуйста, попробуйте снова.
+                    </div>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Вы вошли как {{ user.get_username }}, но не имеете прав доступа к панели управления.
+                    </div>
+                    {% endif %}
+
+                    <form method="post" id="login-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ next }}" />
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Имя пользователя</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+                                {{ form.username }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Пароль</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                {{ form.password }}
+                            </div>
+                            <div class="form-text">
+                                <a href="{% url 'password_reset' %}">Забыли пароль?</a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="id_remember" name="remember">
+                            <label class="form-check-label" for="id_remember">Запомнить меня</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Войти
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-center bg-light">
+                    <small class="text-muted">
+                        Только для авторизованных администраторов
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #content-main {
+        max-width: 100%;
+        padding: 20px;
+    }
+
+    .card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        border-bottom: none;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+
+    .form-control:focus {
+        border-color: #6f42c1;
+        box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+    }
+
+    .btn-primary {
+        background-color: #6f42c1;
+        border: none;
+        padding: 10px 20px;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+    .btn-primary:hover {
+        background-color: #5a36a1;
+    }
+</style>
+{% endblock %}

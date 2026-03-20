@@ -1,0 +1,251 @@
+{% extends 'reviews/base.html' %}
+
+{% block title %}Мои команды - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Хлебные крошки -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'profile' %}" class="text-decoration-none">Профиль</a></li>
+            <li class="breadcrumb-item active">Мои команды</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5 fw-bold gradient-text">Мои команды</h1>
+            <p class="lead text-muted">Команды, которыми вы управляете или в которых участвуете</p>
+        </div>
+    </div>
+
+    <!-- Команды, которыми управляю -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-person-badge-fill me-2 gradient-text"></i>
+                Команды, которыми управляю
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-2">{{ led_teams.count }}</span>
+            </h5>
+            <a href="{% url 'create_team' %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Создать команду
+            </a>
+        </div>
+        <div class="card-body">
+            {% if led_teams %}
+            <div class="row">
+                {% for team in led_teams %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 article-card">
+                        <div class="card-body d-flex flex-column">
+                            <!-- Лидер -->
+                            <div class="mb-3">
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-star-fill me-1"></i> Лидер
+                                </span>
+                            </div>
+
+                            <!-- Название и описание -->
+                            <h5 class="card-title">{{ team.name }}</h5>
+                            <p class="card-text text-muted mb-4">{{ team.description|truncatewords:15 }}</p>
+
+                            <!-- Проект -->
+                            <div class="mb-4">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-diagram-3 me-2 text-muted"></i>
+                                    <small class="text-muted">{{ team.project.name }}</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-people me-2 text-muted"></i>
+                                    <small class="text-muted">{{ team.member_count }} участников</small>
+                                </div>
+                            </div>
+
+                            <!-- Действия -->
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar me-1"></i>
+                                        {{ team.created_at|date:"d.m.Y" }}
+                                    </small>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'team_detail' team.slug %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="inviteToTeam({{ team.id }})">
+                                            <i class="bi bi-person-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-people display-1 gradient-text mb-4"></i>
+                <h5 class="fw-bold mb-3">Вы не управляете командами</h5>
+                <p class="text-muted mb-4">Создайте свою первую команду и пригласите участников</p>
+                <a href="{% url 'create_team' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i> Создать команду
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Команды, в которых участвую -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-people-fill me-2 gradient-text"></i>
+                Команды, в которых участвую
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-2">{{ participating_teams.count }}</span>
+            </h5>
+            <a href="{% url 'team_list' %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-search me-1"></i> Найти команды
+            </a>
+        </div>
+        <div class="card-body">
+            {% if participating_teams %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Команда</th>
+                            <th>Роль</th>
+                            <th>Проект</th>
+                            <th>Лидер</th>
+                            <th>Участников</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for team in participating_teams %}
+                        {% with user_team=team.userteam_set.get user=request.user %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                        <i class="bi bi-people gradient-text"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ team.name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ team.description|truncatewords:5 }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    {{ user_team.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'project_detail' team.project.slug %}" class="text-decoration-none">
+                                    {{ team.project.name }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-warning bg-opacity-10 rounded-circle p-1 me-2">
+                                        <i class="bi bi-star-fill text-warning"></i>
+                                    </div>
+                                    {{ team.leader.username }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-people me-2 text-muted"></i>
+                                    {{ team.member_count }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'team_detail' team.slug %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'leave_team' team.id %}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('Вы уверены, что хотите покинуть команду?')">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-person display-1 gradient-text mb-4"></i>
+                <h5 class="fw-bold mb-3">Вы не участвуете в командах</h5>
+                <p class="text-muted mb-4">Присоединитесь к существующим командам или создайте свою</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'team_list' %}" class="btn btn-primary">
+                        <i class="bi bi-search me-2"></i> Найти команды
+                    </a>
+                    <a href="{% url 'create_team' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-people me-2"></i> Создать команду
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+<script>
+    function inviteToTeam(teamId) {
+        const email = prompt('Введите email пользователя для приглашения:');
+        if (email) {
+            fetch(`/teams/${teamId}/invite/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ email: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Приглашение отправлено!');
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Ошибка отправки приглашения');
+            });
+        }
+    }
+</script>
+
+<style>
+    .table td, .table th {
+        vertical-align: middle;
+        border-color: var(--dark-border);
+    }
+
+    .table thead th {
+        border-bottom: 2px solid var(--dark-border);
+        color: var(--primary-purple-light);
+        font-weight: 600;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(138, 43, 226, 0.05);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 5px 10px;
+    }
+</style>
+{% endblock %}

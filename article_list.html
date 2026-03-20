@@ -1,0 +1,188 @@
+[file name]: article_list.html
+[file content begin]
+{% extends 'reviews/base.html' %}
+
+{% block title %}Статьи - TechReview{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-5 fw-bold mb-3 gradient-text">Статьи</h1>
+            <p class="lead text-muted mb-4">Исследуйте последние обзоры, туториалы и анализ технологий</p>
+
+            <!-- Поиск -->
+            <div class="card border-0 glow-border mb-4">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-dark">
+                                    <i class="bi bi-search gradient-text"></i>
+                                </span>
+                                <input type="text" name="q" class="form-control border-dark"
+                                       placeholder="Поиск статей..." value="{{ query|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select name="type" class="form-select border-dark">
+                                <option value="">Все типы</option>
+                                {% for key, value in article_types.items %}
+                                    <option value="{{ key }}" {% if article_type == key %}selected{% endif %}>
+                                        {{ value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-2"></i> Найти статьи
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список статей -->
+    <div class="row">
+        {% for article in page_obj %}
+        <div class="col-lg-6 mb-4">
+            <div class="card article-card h-100">
+                <div class="card-body">
+                    <!-- Заголовок и тип -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary mb-2">
+                                {{ article.get_article_type_display }}
+                            </span>
+                            <h4 class="card-title mb-2">
+                                <a href="{% url 'article_detail' article.slug %}" class="text-decoration-none">
+                                    {{ article.title }}
+                                </a>
+                            </h4>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li><a class="dropdown-item" href="{% url 'article_detail' article.slug %}">Читать</a></li>
+                                {% if user == article.author or user.is_staff %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Редактировать</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Краткое описание -->
+                    <p class="card-text text-muted mb-4">{{ article.excerpt }}</p>
+
+                    <!-- Информация об авторе и статистика -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                <i class="bi bi-person gradient-text"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Автор</small>
+                                <div>{{ article.author.username }}</div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-center">
+                                    <div class="h5 mb-0">{{ article.views }}</div>
+                                    <small class="text-muted">👁</small>
+                                </div>
+                                <div class="text-center">
+                                    <div class="h5 mb-0">{{ article.comments.count }}</div>
+                                    <small class="text-muted">💬</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Теги и дата -->
+                    <hr class="my-3 border-secondary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% for tag in article.get_tags_list|slice:":3" %}
+                            <span class="badge bg-dark border border-primary bg-opacity-25 me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ article.published_date|date:"d.m.Y" }}
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Кнопка читать -->
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <a href="{% url 'article_detail' article.slug %}" class="btn btn-primary w-100">
+                        <i class="bi bi-book me-2"></i> Читать статью
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 text-center py-5">
+                <div class="card-body">
+                    <i class="bi bi-newspaper display-1 gradient-text mb-4"></i>
+                    <h3 class="fw-bold mb-3">Статьи не найдены</h3>
+                    <p class="text-muted mb-4">Попробуйте изменить параметры поиска или создайте первую статью</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'create_article' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-pencil-square me-2"></i> Написать статью
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if article_type %}&type={{ article_type }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if article_type %}&type={{ article_type }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if article_type %}&type={{ article_type }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+[file content end]
